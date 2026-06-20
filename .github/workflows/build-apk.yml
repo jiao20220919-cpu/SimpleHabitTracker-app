@@ -33,11 +33,11 @@ jobs:
         npm run build
         npx cap sync
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '17'
+        java-version: '21'
 
     - name: Repair Gradlew and Wrapper (fixes Windows line-endings and corrupt wrapper jar bugs)
       run: |
