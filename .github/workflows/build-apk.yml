@@ -43,9 +43,9 @@ jobs:
       run: |
         # Fix line endings in the gradlew bash script in case it was checked in with CRLF from Windows
         sed -i -e 's/\r$//' android/gradlew
-        # Download a fresh, uncorrupted gradle-wrapper.jar directly from official Gradle repo to replace any corrupted checked-in jar
-        mkdir -p android/gradle/wrapper
-        curl -L https://github.com/gradle/gradle/raw/v8.12.0/gradle/wrapper/gradle-wrapper.jar -o android/gradle/wrapper/gradle-wrapper.jar
+        # Generate a fresh, uncorrupted gradle-wrapper.jar using the preinstalled gradle command in GitHub Actions runner
+        cd android
+        gradle wrapper --gradle-version 8.12
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
