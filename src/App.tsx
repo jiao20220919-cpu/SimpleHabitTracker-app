@@ -5,6 +5,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
+import localforage from 'localforage';
 import { 
   Plus, 
   Search, 
@@ -21,17 +23,40 @@ import { Habit, HabitCategory } from './types';
 import { 
   getInitialHabits, 
   getLast7Days, 
-  getLocalDateString 
+  getLocalDateString,
+  triggerHaptic
 } from './utils';
 import { StatsPanel } from './components/StatsPanel';
 import { HabitCard } from './components/HabitCard';
 import { AddHabitModal } from './components/AddHabitModal';
 import { OverallProgress } from './components/OverallProgress';
+import { GlobalFocusTimer } from './components/GlobalFocusTimer';
+import { Language, translations } from './locales';
+
+// Configure localForage with IndexedDB as driver priority for premium robust offline persistence
+localforage.config({
+  name: 'MinimalHabitTracker',
+  storeName: 'habits_store',
+  driver: [localforage.INDEXEDDB, localforage.WEBSQL, localforage.LOCALSTORAGE]
+});
 
 const STORAGE_KEY = 'minimal_habit_tracker_habits';
 const THEME_KEY = 'minimal_habit_tracker_theme';
 
 export default function App() {
+  const [lang, setLang] = useState<Language>(() => {
+    const saved = localStorage.getItem('minimal_habit_tracker_language');
+    if (saved === 'en' || saved === 'zh' || saved === 'ja') {
+      return saved as Language;
+    }
+    const navLang = navigator.language.toLowerCase();
+    if (navLang.includes('ja')) return 'ja';
+    if (navLang.includes('en')) return 'en';
+    return 'zh';
+  });
+
+  const t = translations[lang];
+
   const [habits, setHabits] = useState<Habit[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,18 +65,74 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [days, setDays] = useState(getLast7Days());
 
-  // 1. Initialize state from localStorage
-  useEffect(() => {
-    const rawHabits = localStorage.getItem(STORAGE_KEY);
-    if (rawHabits) {
-      try {
-        setHabits(JSON.parse(rawHabits));
-      } catch (e) {
-        setHabits(getInitialHabits());
+  const [lastCelebratedDate, setLastCelebratedDate] = useState<string>(() => {
+    return localStorage.getItem('minimal_habit_tracker_last_celebrated') || '';
+  });
+
+  const triggerCelebration = () => {
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+      // Confetti burst from left side of screen
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.75 },
+        colors: ['#6366f1', '#10b981', '#14b8a6', '#f59e0b', '#f43f5e', '#8b5cf6']
+      });
+      // Confetti burst from right side of screen
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.75 },
+        colors: ['#6366f1', '#10b981', '#14b8a6', '#f59e0b', '#f43f5e', '#8b5cf6']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
       }
-    } else {
-      setHabits(getInitialHabits());
-    }
+    }());
+  };
+
+  // 1. Initialize state from localforage (IndexedDB) with localStorage fallback
+  useEffect(() => {
+    const initializeDataAndStorage = async () => {
+      try {
+        const storedHabits = await localforage.getItem<Habit[]>(STORAGE_KEY);
+        if (storedHabits && storedHabits.length > 0) {
+          setHabits(storedHabits);
+          // Sync to localStorage as redundant helper
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(storedHabits));
+          return;
+        }
+      } catch (err) {
+        console.warn('Trouble grabbing from IndexedDB, trying localStorage fallback...', err);
+      }
+
+      // LocalStorage Fallback if localforage fails or has not been instantiated
+      const rawHabits = localStorage.getItem(STORAGE_KEY);
+      if (rawHabits) {
+        try {
+          const parsed = JSON.parse(rawHabits);
+          setHabits(parsed);
+          // Sync with IndexedDB
+          await localforage.setItem(STORAGE_KEY, parsed);
+        } catch (e) {
+          const initial = getInitialHabits();
+          setHabits(initial);
+          await localforage.setItem(STORAGE_KEY, initial);
+        }
+      } else {
+        const initial = getInitialHabits();
+        setHabits(initial);
+        await localforage.setItem(STORAGE_KEY, initial);
+      }
+    };
+
+    initializeDataAndStorage();
 
     // Load theme setting
     const savedTheme = localStorage.getItem(THEME_KEY);
@@ -72,14 +153,41 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 2. Persist state to localStorage on updates
+  // 2. Persist state to localforage (IndexedDB) and localStorage on updates
   const saveHabitsToStorage = (newHabits: Habit[]) => {
     setHabits(newHabits);
+    
+    // Save, preferring high-reliability IndexedDB
+    localforage.setItem(STORAGE_KEY, newHabits).catch((err) => {
+      console.error('IndexedDB save failed:', err);
+    });
+
+    // Mirror to standard localStorage as immediate synchronous redundance fallback
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newHabits));
+
+    // Evaluate today's completed items vs total active ones for confetti reward
+    const activeHabits = newHabits.filter((h) => !h.archived);
+    const todayStr = getLocalDateString();
+    const completedToday = activeHabits.filter((h) => h.completedDates.includes(todayStr)).length;
+
+    if (activeHabits.length > 0 && completedToday === activeHabits.length) {
+      if (lastCelebratedDate !== todayStr) {
+        setLastCelebratedDate(todayStr);
+        localStorage.setItem('minimal_habit_tracker_last_celebrated', todayStr);
+        triggerCelebration();
+      }
+    } else {
+      // If no longer at 100%, allow them to earn the celebration again
+      if (lastCelebratedDate === todayStr) {
+        setLastCelebratedDate('');
+        localStorage.removeItem('minimal_habit_tracker_last_celebrated');
+      }
+    }
   };
 
   // 3. Toggle Dark style theme
   const toggleTheme = () => {
+    triggerHaptic();
     const nextMode = !isDarkMode;
     setIsDarkMode(nextMode);
     if (nextMode) {
@@ -93,6 +201,7 @@ export default function App() {
 
   // 4. Reset to Initial Habits
   const handleResetDefaults = () => {
+    triggerHaptic();
     const defaults = getInitialHabits();
     saveHabitsToStorage(defaults);
   };
@@ -155,6 +264,43 @@ export default function App() {
     saveHabitsToStorage(nextHabits);
   };
 
+  // 8.5 Action Handle: Update Habit journal notes
+  const handleUpdateNotes = (habitId: string, dateString: string, note: string) => {
+    const nextHabits = habits.map((habit) => {
+      if (habit.id === habitId) {
+        const nextNotes = { ...(habit.notes || {}) };
+        if (!note || note.trim() === '') {
+          delete nextNotes[dateString];
+        } else {
+          nextNotes[dateString] = note;
+        }
+        return { ...habit, notes: nextNotes };
+      }
+      return habit;
+    });
+    saveHabitsToStorage(nextHabits);
+  };
+
+  // 8.6 Action Handle: Add Focus minutes
+  const handleAddFocusMinutes = (habitId: string, dateString: string, minutes: number) => {
+    const nextHabits = habits.map((habit) => {
+      if (habit.id === habitId) {
+        const nextMins = { ...(habit.focusMinutes || {}) };
+        nextMins[dateString] = (nextMins[dateString] || 0) + minutes;
+        
+        // Also automatically mark as completed for today if not already
+        const completed = [...habit.completedDates];
+        if (!completed.includes(dateString)) {
+          completed.push(dateString);
+        }
+        
+        return { ...habit, focusMinutes: nextMins, completedDates: completed };
+      }
+      return habit;
+    });
+    saveHabitsToStorage(nextHabits);
+  };
+
   // 9. Action Handle: Add Custom Habit
   const handleAddHabit = (newHabitData: Omit<Habit, 'id' | 'createdAt' | 'completedDates' | 'archived'>) => {
     const newHabit: Habit = {
@@ -175,15 +321,32 @@ export default function App() {
     return matchesSearch && matchesCategory && matchesTab;
   });
 
-  // Calculate day headers in Chinese
+  // Calculate day headers in Chinese, Japanese or English
   const getFormattedToday = () => {
     const d = new Date();
-    const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-    const year = d.getFullYear();
-    const month = d.getMonth() + 1;
-    const date = d.getDate();
-    const dayName = days[d.getDay()];
-    return `${year}年${month}月${date}日 · ${dayName}`;
+    if (lang === 'zh') {
+      const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const date = d.getDate();
+      const dayName = days[d.getDay()];
+      return `${year}年${month}月${date}日 · ${dayName}`;
+    } else if (lang === 'ja') {
+      const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const date = d.getDate();
+      const dayName = days[d.getDay()];
+      return `${year}年${month}月${date}日 · ${dayName}`;
+    } else {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dayName = days[d.getDay()];
+      const monthName = months[d.getMonth()];
+      const date = d.getDate();
+      const year = d.getFullYear();
+      return `${dayName}, ${monthName} ${date}, ${year}`;
+    }
   };
 
   return (
@@ -196,8 +359,10 @@ export default function App() {
               <Sparkles className="h-5.5 w-5.5 fill-current" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-zinc-950 dark:text-zinc-50 leading-tight">极简习惯</h1>
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 block">
+              <h1 className="text-sm font-extrabold tracking-tight text-zinc-955 dark:text-zinc-50 leading-tight">
+                {t.appName}
+              </h1>
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 block">
                 {getFormattedToday()}
               </span>
             </div>
@@ -205,9 +370,27 @@ export default function App() {
 
           {/* Theme custom settings & Quick Add triggers */}
           <div className="flex items-center gap-2">
+            {/* Minimalist International Language Selector Dropdown */}
+            <select
+              value={lang}
+              onChange={(e) => {
+                triggerHaptic();
+                const nextLang = e.target.value as Language;
+                setLang(nextLang);
+                localStorage.setItem('minimal_habit_tracker_language', nextLang);
+              }}
+              className="flex h-10 px-2 sm:px-3 text-xs font-semibold items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-650 outline-none hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-all shadow-sm cursor-pointer"
+              title="切换语言 / Switch Language / 言語切替"
+              id="language-selector"
+            >
+              <option value="zh">🇨🇳 中文</option>
+              <option value="en">🇺🇸 EN</option>
+              <option value="ja">🇯🇵 日本語</option>
+            </select>
+
             <button
               onClick={toggleTheme}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-all shadow-sm"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-650 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-all shadow-sm"
               title={isDarkMode ? '切换浅色模式' : '切换深色模式'}
               id="theme-toggler"
             >
@@ -218,11 +401,11 @@ export default function App() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-2xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 transition-all dark:bg-indigo-500 dark:hover:bg-indigo-400"
+              className="flex items-center gap-1.5 rounded-2xl bg-indigo-600 px-3.5 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 transition-all dark:bg-indigo-500 dark:hover:bg-indigo-400"
               id="btn-trigger-add-habit"
             >
               <Plus className="h-4 w-4 stroke-[3]" />
-              <span>新增习惯</span>
+              <span className="hidden sm:inline">{t.addHabitDefault}</span>
             </motion.button>
           </div>
         </div>
@@ -230,10 +413,18 @@ export default function App() {
 
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 space-y-6" id="main-content">
         {/* Overall dynamic circular progress gauge */}
-        <OverallProgress habits={habits} />
+        <OverallProgress habits={habits} lang={lang} />
 
         {/* Dynamic header stats board */}
-        <StatsPanel habits={habits} />
+        <StatsPanel habits={habits} lang={lang} />
+
+        {/* Global Focus Pomodoro Console */}
+        <GlobalFocusTimer
+          habits={habits}
+          onAddFocusMinutes={handleAddFocusMinutes}
+          onToggleDate={handleToggleDate}
+          lang={lang}
+        />
 
         {/* Dynamic filter toolbar */}
         <div className="rounded-3xl border border-zinc-150 bg-white p-4.5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900 space-y-3.5" id="filter-bar">
@@ -245,8 +436,8 @@ export default function App() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索您的习惯名称..."
-                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 pl-10 pr-4 py-2.5 text-xs text-zinc-800 placeholder-zinc-400 outline-none transition-all focus:border-indigo-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:focus:border-indigo-400"
+                placeholder={t.filterSearchPlaceholder}
+                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 pl-10 pr-4 py-2.5 text-xs text-zinc-805 placeholder-zinc-400 outline-none transition-all focus:border-indigo-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:focus:border-indigo-400"
                 id="search-habits-input"
               />
             </div>
@@ -262,32 +453,32 @@ export default function App() {
                 }`}
                 id="tab-active"
               >
-                正在进行
+                {lang === 'zh' ? '正在进行' : lang === 'ja' ? '実行中' : 'Active'}
               </button>
               <button
                 onClick={() => setCurrentTab('archived')}
                 className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
                   currentTab === 'archived'
                     ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white'
-                    : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                    : 'text-zinc-500 hover:text-zinc-805 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }`}
                 id="tab-archived"
               >
-                已归档
+                {lang === 'zh' ? '已归档' : lang === 'ja' ? 'アーカイブ' : 'Archived'}
               </button>
             </div>
           </div>
 
           {/* Quick Category Filtering Chips */}
           <div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 dark:border-zinc-800/80 pt-3.5">
-            <span className="text-xs text-zinc-400 dark:text-zinc-500 font-semibold mr-1">分类：</span>
+            <span className="text-xs text-zinc-400 dark:text-zinc-500 font-semibold mr-1">{t.allHabitsFilter}</span>
             {[
-              { id: 'all', label: '全部' },
-              { id: 'health', label: '🏥 健康' },
-              { id: 'sport', label: '💪 运动' },
-              { id: 'mind', label: '🧘 心智' },
-              { id: 'work', label: '💼 工作' },
-              { id: 'custom', label: '✨ 自定义' }
+              { id: 'all', label: t.filterAll },
+              { id: 'health', label: `🏥 ${t.filterHealth}` },
+              { id: 'sport', label: `💪 ${t.filterSport}` },
+              { id: 'mind', label: `🧘 ${t.filterMind}` },
+              { id: 'work', label: `💼 ${t.filterWork}` },
+              { id: 'custom', label: `✨ ${t.filterCustom}` }
             ].map((cat) => (
               <button
                 key={cat.id}
@@ -322,6 +513,9 @@ export default function App() {
                     onToggleDate={handleToggleDate}
                     onDelete={handleDeleteHabit}
                     onToggleArchive={handleToggleArchive}
+                    onUpdateNotes={handleUpdateNotes}
+                    onAddFocusMinutes={handleAddFocusMinutes}
+                    lang={lang}
                   />
                 ))}
               </motion.div>
@@ -414,6 +608,7 @@ export default function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddHabit={handleAddHabit}
+        lang={lang}
       />
     </div>
   );

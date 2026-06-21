@@ -9,18 +9,21 @@ import { X, Sparkles, AlertCircle } from 'lucide-react';
 import { Habit, HabitCategory } from '../types';
 import { HabitIcon } from './HabitIcon';
 
+import { Language, translations } from '../locales';
+
 interface AddHabitModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddHabit: (habit: Omit<Habit, 'id' | 'createdAt' | 'completedDates' | 'archived'>) => void;
+  lang?: Language;
 }
 
-const CATEGORIES: { id: HabitCategory; label: string; icon: string }[] = [
-  { id: 'health', label: '🏥 健康', icon: 'Heart' },
-  { id: 'sport', label: '💪 运动', icon: 'Activity' },
-  { id: 'mind', label: '🧘 心智', icon: 'Sparkles' },
-  { id: 'work', label: '💼 工作', icon: 'Briefcase' },
-  { id: 'custom', label: '✨ 自定义', icon: 'Smile' },
+const CATEGORIES: { id: HabitCategory; label_zh: string; label_ja: string; label_en: string; icon: string }[] = [
+  { id: 'health', label_zh: '🏥 健康增进', label_ja: '🏥 健康増進', label_en: '🏥 Health Care', icon: 'Heart' },
+  { id: 'sport', label_zh: '💪 体力拔群', label_ja: '💪 体力づくり', label_en: '💪 Fitness Log', icon: 'Activity' },
+  { id: 'mind', label_zh: '🧘 心智舒爽', label_ja: '🧘 精神ケア', label_en: '🧘 Mind Refresh', icon: 'Sparkles' },
+  { id: 'work', label_zh: '💼 高效工作', label_ja: '💼 本業推進', label_en: '💼 Routine Work', icon: 'Briefcase' },
+  { id: 'custom', label_zh: '✨ 特色自定义', label_ja: '✨ 自主カスタム', label_en: '✨ Custom Seed', icon: 'Smile' },
 ];
 
 const COLORS = [
@@ -32,20 +35,32 @@ const COLORS = [
   { name: 'violet', hex: '#8b5cf6', label: '紫罗兰' },
 ];
 
+const EMOJIS = [
+  '🏃‍♂️', '💪', '🚴', '🏋️', '🧘', '🚶', '🏊', '🚴‍♂️', '🍎', '🥦',
+  '🥛', '💧', '🔋', '💊', '🥗', '🍵', '☕', '🧠', '📚', '📝',
+  '📓', '🎨', '🎸', '🌱', '☀️', '🌙', '💼', '💻', '📈', '🎯',
+  '🔥', '🚀', '💡', '📅', '💰', '🔑', '✨', '🌟', '🎈', '🎉',
+  '❤️', '🏡', '🐶', '🐱', '🚗', '🏖️'
+];
+
 const ICONS = [
-  'Activity', 'Moon', 'Droplet', 'Sparkles', 'BookOpen', 'Brain', 
-  'Coffee', 'Heart', 'Smile', 'Flame', 'Trophy', 'Sun'
+  'Activity', 'Heart', 'Moon', 'Sun', 'Droplet', 'Sparkles', 'Flame', 'Trophy',
+  'BookOpen', 'Brain', 'Coffee', 'Briefcase', 'GraduationCap', 'Calendar', 'TrendingUp', 'Smile',
+  'Timer', 'Scale', 'ShoppingBag', 'Gamepad2', 'CheckCircle2', 'ShieldCheck', 'Music', 'Check'
 ];
 
 export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   isOpen,
   onClose,
   onAddHabit,
+  lang = 'zh',
 }) => {
+  const t = translations[lang];
   const [name, setName] = useState('');
   const [category, setCategory] = useState<HabitCategory>('health');
   const [selectedColor, setSelectedColor] = useState('indigo');
-  const [selectedIcon, setSelectedIcon] = useState('Activity');
+  const [selectedIcon, setSelectedIcon] = useState('🏃‍♂️');
+  const [pickerTab, setPickerTab] = useState<'emoji' | 'lucide'>('emoji');
   const [error, setError] = useState('');
 
   // Reset inputs when open states change
@@ -54,7 +69,8 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
       setName('');
       setCategory('health');
       setSelectedColor('indigo');
-      setSelectedIcon('Activity');
+      setSelectedIcon('🏃‍♂️');
+      setPickerTab('emoji');
       setError('');
     }
   }, [isOpen]);
@@ -62,11 +78,11 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('请输入习惯名称！');
+      setError(lang === 'zh' ? '请输入习惯名称！' : lang === 'ja' ? '習慣の名前を入力してください！' : 'Please enter a habit name!');
       return;
     }
     if (name.length > 25) {
-      setError('名称不能超过 25 个字符');
+      setError(lang === 'zh' ? '名称不能超过 25 个字符' : lang === 'ja' ? '名前は25文字以内にしてください' : 'Name cannot exceed 25 characters');
       return;
     }
 
@@ -108,11 +124,11 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <h2 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-indigo-500 fill-indigo-100 dark:fill-indigo-950" />
-                新增习惯
+                {t.addHabitTitle}
               </h2>
               <button
                 onClick={onClose}
-                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors"
+                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-650 dark:hover:bg-zinc-805 dark:hover:text-zinc-300 transition-colors"
                 id="btn-close-modal"
               >
                 <X className="h-5 w-5" />
@@ -124,19 +140,19 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
               {/* Input name */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1.5">
-                  习惯名称
+                  {t.addHabitNameLabel}
                 </label>
                 <input
                   type="text"
                   autoFocus
-                  placeholder="例如：早起跑步、每天喝水 2L..."
+                  placeholder={t.addHabitPlaceholder}
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
                     if (error) setError('');
                   }}
                   maxLength={25}
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-800 placeholder-zinc-400 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-950"
+                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-805 placeholder-zinc-400 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-950"
                   id="input-habit-name"
                 />
                 {error && (
@@ -150,7 +166,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
               {/* Category Select Chips */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
-                  选择分类
+                  {lang === 'zh' ? '选择习惯分类' : lang === 'ja' ? 'カテゴリーを選ぶ' : 'Select Category'}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORIES.map((cat) => (
@@ -160,12 +176,12 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
                       onClick={() => setCategory(cat.id)}
                       className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all ${
                         category === cat.id
-                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-sm'
+                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-955 shadow-sm'
                           : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700/80'
                       }`}
                       id={`btn-select-cat-${cat.id}`}
                     >
-                      {cat.label}
+                      {lang === 'zh' ? cat.label_zh : lang === 'ja' ? cat.label_ja : cat.label_en}
                     </button>
                   ))}
                 </div>
@@ -173,33 +189,86 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
 
               {/* Icons Grid Selector */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
-                  选择图标
-                </label>
-                <div className="grid grid-cols-6 gap-2">
-                  {ICONS.map((ico) => (
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                    {lang === 'zh' ? '选择标志图标' : lang === 'ja' ? 'アイコンを選択' : 'Choose Emblem'}
+                  </label>
+                  
+                  {/* Picker sub-tabs */}
+                  <div className="flex rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-950">
                     <button
-                      key={ico}
                       type="button"
-                      onClick={() => setSelectedIcon(ico)}
-                      className={`flex h-11 items-center justify-center rounded-xl border transition-all ${
-                        selectedIcon === ico
-                          ? 'border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:border-indigo-400 dark:bg-indigo-950/30 dark:text-indigo-400'
-                          : 'border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-zinc-700 dark:hover:text-zinc-300'
+                      onClick={() => {
+                        setPickerTab('emoji');
+                        setSelectedIcon(EMOJIS[0]);
+                      }}
+                      className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-all cursor-pointer ${
+                        pickerTab === 'emoji'
+                          ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white'
+                          : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                       }`}
-                      id={`btn-select-icon-${ico}`}
-                      title={ico}
                     >
-                      <HabitIcon name={ico} className="h-5 w-5" />
+                      {lang === 'zh' ? '趣味 Emoji' : lang === 'ja' ? '楽しい絵文字' : 'Folk Emojis'}
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPickerTab('lucide');
+                        setSelectedIcon(ICONS[0]);
+                      }}
+                      className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-all cursor-pointer ${
+                        pickerTab === 'lucide'
+                          ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white'
+                          : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                      }`}
+                    >
+                      {lang === 'zh' ? '简约图标' : lang === 'ja' ? 'ミニ画アイコン' : 'Minimalist Icons'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Grid with custom height and scroll mask */}
+                <div className="max-h-[128px] overflow-y-auto rounded-2xl border border-zinc-150/80 dark:border-zinc-800 p-2.5 bg-zinc-50/50 dark:bg-zinc-950/20 grid grid-cols-6 gap-2">
+                  {pickerTab === 'emoji' ? (
+                    EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setSelectedIcon(emoji)}
+                        className={`flex h-11 items-center justify-center rounded-xl border transition-all cursor-pointer ${
+                          selectedIcon === emoji
+                            ? 'border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:border-indigo-400 dark:bg-indigo-950/30 dark:text-indigo-400 font-bold scale-105 shadow-sm'
+                            : 'border-transparent text-zinc-400 hover:scale-108 dark:text-zinc-500 dark:hover:text-zinc-300/80'
+                        }`}
+                        id={`btn-select-emoji-${emoji}`}
+                      >
+                        <HabitIcon name={emoji} className="h-6 w-6" />
+                      </button>
+                    ))
+                  ) : (
+                    ICONS.map((ico) => (
+                      <button
+                        key={ico}
+                        type="button"
+                        onClick={() => setSelectedIcon(ico)}
+                        className={`flex h-11 items-center justify-center rounded-xl border transition-all cursor-pointer ${
+                          selectedIcon === ico
+                            ? 'border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:border-indigo-400 dark:bg-indigo-950/30 dark:text-indigo-400 scale-105 shadow-sm'
+                            : 'border-transparent text-zinc-400 hover:scale-108 hover:text-zinc-650 dark:text-zinc-500 dark:hover:text-zinc-300/80'
+                        }`}
+                        id={`btn-select-icon-${ico}`}
+                      >
+                        <HabitIcon name={ico} className="h-5 w-5" />
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
 
               {/* Color Themes Circles Select */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
-                  专属皮肤色
+                  {lang === 'zh' ? '专属皮肤色' : lang === 'ja' ? '専属スキン色' : 'Theming Aura'}
                 </label>
                 <div className="flex items-center gap-3">
                   {COLORS.map((col) => (
@@ -235,14 +304,14 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
                   className="rounded-2xl bg-zinc-50 border border-zinc-200 px-4.5 py-2.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100/80 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700/80"
                   id="btn-cancel-modal"
                 >
-                  取消
+                  {t.addHabitCancel}
                 </button>
                 <button
                   type="submit"
                   className="rounded-2xl bg-indigo-600 px-5.5 py-2.5 text-xs font-semibold text-white shadow-md hover:bg-indigo-700 transition-colors dark:bg-indigo-500 dark:hover:bg-indigo-400"
                   id="btn-submit-modal"
                 >
-                  确认创建
+                  {t.addHabitSubmit}
                 </button>
               </div>
             </form>

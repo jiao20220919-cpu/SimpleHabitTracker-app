@@ -9,11 +9,14 @@ import { Check, Flame, Percent, Calendar } from 'lucide-react';
 import { Habit } from '../types';
 import { getLocalDateString } from '../utils';
 
+import { Language } from '../locales';
+
 interface OverallProgressProps {
   habits: Habit[];
+  lang: Language;
 }
 
-export const OverallProgress: React.FC<OverallProgressProps> = ({ habits }) => {
+export const OverallProgress: React.FC<OverallProgressProps> = ({ habits, lang }) => {
   const activeHabits = habits.filter((h) => !h.archived);
   const total = activeHabits.length;
   const todayStr = getLocalDateString();
@@ -47,11 +50,21 @@ export const OverallProgress: React.FC<OverallProgressProps> = ({ habits }) => {
         {/* Left Side: Dynamic Text Metrics */}
         <div className="flex-1 space-y-4">
           <div className="space-y-1">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">今日总完成率</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              {lang === 'zh' ? '今日总完成率' : lang === 'ja' ? '今日の総達成率' : "Today's Achievement Circle"}
+            </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {total > 0 
-                ? `今天已完成 ${completedToday} 个习惯，守护自律进度条！`
-                : '开始创建一个新习惯并开启您的打卡之旅吧 ✨'
+                ? (lang === 'zh'
+                    ? `今天已完成 ${completedToday} 个习惯，守护自律进度条！`
+                    : lang === 'ja'
+                      ? `本日すでに ${completedToday} 個の習慣を完了させました！`
+                      : `You completed ${completedToday} habits today. Guard your streak!`)
+                : (lang === 'zh'
+                    ? '开始创建一个新习惯并开启您的打卡之旅吧 ✨'
+                    : lang === 'ja'
+                      ? '新しい習慣を作って、自己律の旅を始めましょう ✨'
+                      : 'Seed your very first habit to kickoff the discipline flywheel ✨')
               }
             </p>
           </div>
@@ -59,7 +72,7 @@ export const OverallProgress: React.FC<OverallProgressProps> = ({ habits }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-2xl bg-zinc-50 p-3 dark:bg-zinc-950/50">
               <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 block leading-none">
-                今日打卡率
+                {lang === 'zh' ? '今日打卡率' : lang === 'ja' ? '今日の達成率' : "Today's Rate"}
               </span>
               <span className="text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1 block">
                 {todayRate}%
@@ -68,7 +81,7 @@ export const OverallProgress: React.FC<OverallProgressProps> = ({ habits }) => {
 
             <div className="rounded-2xl bg-zinc-50 p-3 dark:bg-zinc-950/50">
               <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 block leading-none">
-                30天宏观完成率
+                {lang === 'zh' ? '30天宏观完成率' : lang === 'ja' ? '30日間の広域完成率' : '30-Day Density'}
               </span>
               <span className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
                 {overallRate}%
@@ -115,7 +128,7 @@ export const OverallProgress: React.FC<OverallProgressProps> = ({ habits }) => {
                   <span className="text-xs font-semibold text-zinc-400">%</span>
                 </span>
                 <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 mt-1">
-                  今日完成
+                  {lang === 'zh' ? '今日完成' : lang === 'ja' ? '今日完了' : 'Today'}
                 </span>
               </div>
             </div>
@@ -157,7 +170,7 @@ export const OverallProgress: React.FC<OverallProgressProps> = ({ habits }) => {
                   <span className="text-xs font-semibold text-zinc-400">%</span>
                 </span>
                 <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 mt-1">
-                  历史深度
+                  {lang === 'zh' ? '历史深度' : lang === 'ja' ? '累計深度' : 'Overall'}
                 </span>
               </div>
             </div>

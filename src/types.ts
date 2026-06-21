@@ -15,6 +15,8 @@ export interface Habit {
   icon: string; // Lucide icon name
   frequency: 'daily';
   archived: boolean;
+  notes?: Record<string, string>; // dateString -> note text
+  focusMinutes?: Record<string, number>; // dateString -> focus minutes spent
 }
 
 export interface CategoryInfo {

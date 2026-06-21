@@ -4,6 +4,21 @@
  */
 
 import { Habit, HabitCategory } from './types';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+/**
+ * Trigger subtle haptic vibration overlay back on Android + web
+ */
+export async function triggerHaptic(): Promise<void> {
+  try {
+    await Haptics.impact({ style: ImpactStyle.Light });
+  } catch (e) {
+    // Elegant fallback to navigator.vibrate if running under web view/browser
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(12);
+    }
+  }
+}
 
 /**
  * Returns a timezone-safe 'YYYY-MM-DD' representation of a Date
@@ -127,6 +142,9 @@ export function getColorClasses(colorName: string): {
   accentBg: string;
   ripple: string;
   bgActive: string;
+  glowShadow: string;
+  glowActiveShadow: string;
+  glowBorder: string;
 } {
   const colorMap: Record<string, any> = {
     indigo: {
@@ -136,6 +154,9 @@ export function getColorClasses(colorName: string): {
       accentBg: 'bg-indigo-600 dark:bg-indigo-500',
       ripple: 'focus:ripple-indigo',
       bgActive: 'bg-indigo-100 dark:bg-indigo-900/30',
+      glowShadow: 'hover:shadow-[0_12px_40px_rgba(99,102,241,0.15)] dark:hover:shadow-[0_12px_45px_rgba(99,102,241,0.22)]',
+      glowActiveShadow: 'shadow-[0_12px_40px_-5px_rgba(99,102,241,0.22)] dark:shadow-[0_12px_45px_rgba(99,102,241,0.35)]',
+      glowBorder: 'hover:border-indigo-300 dark:hover:border-indigo-800'
     },
     emerald: {
       text: 'text-emerald-600 dark:text-emerald-400',
@@ -144,6 +165,9 @@ export function getColorClasses(colorName: string): {
       accentBg: 'bg-emerald-600 dark:bg-emerald-500',
       ripple: 'focus:ripple-emerald',
       bgActive: 'bg-emerald-100 dark:bg-emerald-900/30',
+      glowShadow: 'hover:shadow-[0_12px_40px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_12px_45px_rgba(16,185,129,0.22)]',
+      glowActiveShadow: 'shadow-[0_12px_40px_-5px_rgba(16,185,129,0.22)] dark:shadow-[0_12px_45px_rgba(16,185,129,0.35)]',
+      glowBorder: 'hover:border-emerald-300 dark:hover:border-emerald-800'
     },
     teal: {
       text: 'text-teal-600 dark:text-teal-400',
@@ -152,6 +176,9 @@ export function getColorClasses(colorName: string): {
       accentBg: 'bg-teal-600 dark:bg-teal-500',
       ripple: 'focus:ripple-teal',
       bgActive: 'bg-teal-100 dark:bg-teal-900/30',
+      glowShadow: 'hover:shadow-[0_12px_40px_rgba(20,184,166,0.15)] dark:hover:shadow-[0_12px_45px_rgba(20,184,166,0.22)]',
+      glowActiveShadow: 'shadow-[0_12px_40px_-5px_rgba(20,184,166,0.22)] dark:shadow-[0_12px_45px_rgba(20,184,166,0.35)]',
+      glowBorder: 'hover:border-teal-300 dark:hover:border-teal-800'
     },
     amber: {
       text: 'text-amber-600 dark:text-amber-400',
@@ -160,6 +187,9 @@ export function getColorClasses(colorName: string): {
       accentBg: 'bg-amber-600 dark:bg-amber-500',
       ripple: 'focus:ripple-amber',
       bgActive: 'bg-amber-100 dark:bg-amber-900/30',
+      glowShadow: 'hover:shadow-[0_12px_40px_rgba(245,158,11,0.12)] dark:hover:shadow-[0_12px_45px_rgba(245,158,11,0.18)]',
+      glowActiveShadow: 'shadow-[0_12px_40px_-5px_rgba(245,158,11,0.18)] dark:shadow-[0_12px_45px_rgba(245,158,11,0.30)]',
+      glowBorder: 'hover:border-amber-300 dark:hover:border-amber-800'
     },
     rose: {
       text: 'text-rose-600 dark:text-rose-400',
@@ -168,6 +198,9 @@ export function getColorClasses(colorName: string): {
       accentBg: 'bg-rose-600 dark:bg-rose-500',
       ripple: 'focus:ripple-rose',
       bgActive: 'bg-rose-100 dark:bg-rose-900/30',
+      glowShadow: 'hover:shadow-[0_12px_40px_rgba(244,63,94,0.15)] dark:hover:shadow-[0_12px_45px_rgba(244,63,94,0.22)]',
+      glowActiveShadow: 'shadow-[0_12px_40px_-5px_rgba(244,63,94,0.22)] dark:shadow-[0_12px_45px_rgba(244,63,94,0.35)]',
+      glowBorder: 'hover:border-rose-300 dark:hover:border-rose-800'
     },
     violet: {
       text: 'text-violet-600 dark:text-violet-400',
@@ -176,6 +209,9 @@ export function getColorClasses(colorName: string): {
       accentBg: 'bg-violet-600 dark:bg-violet-500',
       ripple: 'focus:ripple-violet',
       bgActive: 'bg-violet-100 dark:bg-violet-900/30',
+      glowShadow: 'hover:shadow-[0_12px_40px_rgba(139,92,246,0.15)] dark:hover:shadow-[0_12px_45px_rgba(139,92,246,0.22)]',
+      glowActiveShadow: 'shadow-[0_12px_40px_-5px_rgba(139,92,246,0.22)] dark:shadow-[0_12px_45px_rgba(139,92,246,0.35)]',
+      glowBorder: 'hover:border-violet-300 dark:hover:border-violet-800'
     },
   };
 
