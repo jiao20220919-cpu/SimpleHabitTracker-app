@@ -1,0 +1,23 @@
+# Global settings
+# Auto-detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Explicitly specify binary files to prevent Git from corrupting them with line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.svg text eol=lf
+
+# Java/Gradle binaries
+*.jar binary
+*.aar binary
+*.apk binary
+*.aab binary
+
+# Common build/script files
+*.bat text eol=crlf
+*.sh text eol=lf
+gradlew text eol=lf

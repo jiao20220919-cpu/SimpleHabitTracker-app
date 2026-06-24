@@ -145,4 +145,54 @@ keytool -genkey -v -keystore my-release-key.keystore -alias habit-key -keyalg RS
      npm run build:android
      ```
 
+---
+
+## ☁️ 五、GitHub Actions 云端自动编译、签名与 AAB 生成指南 (Google Play 专用)
+
+我们已为您在项目根目录配置了专属的自动化构建流：`.github/workflows/build-release.yml`。
+您只需将代码推送（Push）到您的 GitHub 仓库的 `main` 或 `master` 分支，GitHub 就会在云端容器内**自动安装依赖、编译网页版、同步 App 真机外壳、打包出最终的 `.aab` 格式安装包（并同时附带 `.apk` 以便测试）！**
+
+### 5-1. 第一步：在 GitHub 仓库添加安全密钥 (Secrets)
+由于生成的 AAB 包必须使用您的自签名证书（Keystore）加密后才能被 Google Play 承认，这些属于核心商用资产，我们不应该上传到公共代码库。我们应当将其存储在 **GitHub Private Secrets** 中，由流水线按需安全调用。
+
+请前往您的 GitHub 仓库 ➜ 点击顶部的 **Settings** ➜ 左侧侧边栏选择 **Secrets and variables** ➜ 点击 **Actions** ➜ 点击右侧按钮 **New repository secret**。依次配置以下 4 个字段：
+
+1. **`SIGNING_KEY`** (证书的 Base64 文本)  
+   - **它的作用**：GitHub Actions 会在运行时自动把这个 Base64 文本还原为真正的 `.keystore` 文件对应用进行安全盖章签字。
+   - **获取方式**：在您的电脑终端（Mac Terminal 或 Windows WSL/Git Bash）对上面生成的 `my-release-key.keystore` 证书文件转换为 Base64。
+     - **macOS / Linux 命令**：
+       ```bash
+       openssl base64 -in my-release-key.keystore -out base64_key.txt
+       ```
+     - **Windows (PowerShell) 命令**：
+       ```powershell
+       [Convert]::ToBase64String([IO.File]::ReadAllBytes("my-release-key.keystore")) > base64_key.txt
+       ```
+     - 打开生成的 `base64_key.txt` 文件，**复制里面的全部加密字符串**，粘贴并保存为 GitHub 的 `SIGNING_KEY` 密钥。
+
+2. **`ALIAS`** (证书别名)  
+   - 输入您在创建 keystore 时指定的别名（如上文命令中的：`habit-key`）。
+
+3. **`KEY_STORE_PASSWORD`** (证书文件库密码)  
+   - 输入您的 Keystore 密码。
+
+4. **`KEY_PASSWORD`** (独占密钥项密码)  
+   - 输入您的密钥个人密码（如果没有单独设置，通常和库密码保持一致）。
+
+---
+
+### 5-2. 第二步：推送代码至 GitHub
+
+当您在本地将本项目推送至 GitHub 后：
+1. 点击 GitHub 仓库顶栏的 **Actions** 标签卡。
+2. 您会看到一个正在自动运转的绿色小圆圈，名字为 **"Build Signed Android AAB & APK for Google Play"**。
+3. 等待约 3~5 分钟，项目将完美通过前端编译与 Gradle 底层。
+4. **包体下载**：编译成功后，点击进入该流水线历史记录，在页面底部 **Artifacts (产物)** 栏目中，可直接一键下载名为 **`Habits-Production-AAB-APK`** 的 zip 文件。解压后即可直接获取：
+   - 🌟 **`app-release-signed.aab`**（已签名，直接拿去上传至 Google Play Console 发布上架！）
+   - 📱 **`app-release-signed.apk`**（已签名，可直接发送到手机上安装实测发布的最终效果！）
+
+> **💡 温馨 fallback 提示**：即使您在第一天推送代码时**还没有配置上面的 4 个安全密钥**，云端流水线仍会自动运转！它将自动完成环境和打包全过程，并打包输出 **未签名版（Unsigned）的 AAB / APK 安装包** 供您确认结构完整。一旦您补齐了 Secrets，下一次推送就会完全无缝自动生成完美的商店级签名正式包！
+
+---
+
 祝您的《极简习惯追踪器》四端全平台（Web + macOS Desktop + iOS / Apple + Android 移动端 Native App）首发大获成功！ 🎉
