@@ -69,9 +69,16 @@ jobs:
       run: |
         # Fix line endings in the gradlew bash script in case it was checked in with CRLF from Windows
         sed -i -e 's/\r$//' android/gradlew
-        # Generate a fresh, uncorrupted gradle-wrapper.jar using the preinstalled gradle command in GitHub Actions runner
-        cd android
+        # Generate a fresh, uncorrupted gradle-wrapper.jar by running gradle wrapper in an empty temp directory to avoid project evaluation crashes
+        mkdir -p temp-gradle
+        cd temp-gradle
         gradle wrapper --gradle-version 8.14.3
+        cd ..
+        mkdir -p android/gradle/wrapper
+        cp temp-gradle/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar
+        cp temp-gradle/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
+        cp temp-gradle/gradlew android/gradlew
+        rm -rf temp-gradle
 
     - name: Heal Corrupted PNG Resource Files (fixes Git CRLF binary corruption)
       run: |
