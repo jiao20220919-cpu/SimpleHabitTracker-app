@@ -31,6 +31,7 @@ import { HabitCard } from './components/HabitCard';
 import { AddHabitModal } from './components/AddHabitModal';
 import { OverallProgress } from './components/OverallProgress';
 import { GlobalFocusTimer } from './components/GlobalFocusTimer';
+import { PrivacyModal } from './components/PrivacyModal';
 import { Language, translations } from './locales';
 
 // Configure localForage with IndexedDB as driver priority for premium robust offline persistence
@@ -59,6 +60,7 @@ export default function App() {
 
   const [habits, setHabits] = useState<Habit[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<HabitCategory | 'all'>('all');
   const [currentTab, setCurrentTab] = useState<'active' | 'archived'>('active');
@@ -606,7 +608,14 @@ export default function App() {
       {/* Elegant Footer with Privacy Policy Link */}
       <footer className="mx-auto max-w-4xl px-4 pb-12 pt-2 text-center text-xs text-zinc-400 dark:text-zinc-600 space-y-2">
         <div className="flex justify-center gap-4 text-[11px] font-medium">
-          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+          <a 
+            href="/privacy.html" 
+            onClick={(e) => {
+              e.preventDefault();
+              setIsPrivacyOpen(true);
+            }}
+            className="hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+          >
             {lang === 'zh' ? '隐私政策' : lang === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}
           </a>
           <span>•</span>
@@ -619,6 +628,13 @@ export default function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddHabit={handleAddHabit}
+        lang={lang}
+      />
+
+      {/* In-App Privacy Policy Viewer */}
+      <PrivacyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
         lang={lang}
       />
     </div>

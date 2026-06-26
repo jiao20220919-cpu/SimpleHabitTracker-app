@@ -157,9 +157,14 @@
 </head>
 <body>
     <div class="container">
-        <div class="lang-switch">
-            <button class="lang-btn active" onclick="switchLang('zh')">简体中文</button>
-            <button class="lang-btn" onclick="switchLang('en')">English</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+            <a href="/" id="back-nav-btn" onclick="if(window.history.length > 1) { event.preventDefault(); window.history.back(); } else { window.location.href = '/'; }" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 600; padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 14px; background-color: var(--card-bg); transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                ← 返回主页
+            </a>
+            <div class="lang-switch" style="display: flex; gap: 8px; margin-bottom: 0;">
+                <button class="lang-btn active" onclick="switchLang('zh')">简体中文</button>
+                <button class="lang-btn" onclick="switchLang('en')">English</button>
+            </div>
         </div>
 
         <!-- Chinese Version -->
@@ -254,17 +259,20 @@
             const zh = document.getElementById('lang-zh');
             const en = document.getElementById('lang-en');
             const btns = document.querySelectorAll('.lang-btn');
+            const backBtn = document.getElementById('back-nav-btn');
 
             if (lang === 'zh') {
                 zh.style.display = 'block';
                 en.style.display = 'none';
                 btns[0].classList.add('active');
                 btns[1].classList.remove('active');
+                if (backBtn) backBtn.innerHTML = '← 返回主页';
             } else {
                 zh.style.display = 'none';
                 en.style.display = 'block';
                 btns[0].classList.remove('active');
                 btns[1].classList.add('active');
+                if (backBtn) backBtn.innerHTML = '← Back to App';
             }
         }
     </script>
