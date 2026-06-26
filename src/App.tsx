@@ -603,6 +603,17 @@ export default function App() {
         )}
       </main>
 
+      {/* Elegant Footer with Privacy Policy Link */}
+      <footer className="mx-auto max-w-4xl px-4 pb-12 pt-2 text-center text-xs text-zinc-400 dark:text-zinc-600 space-y-2">
+        <div className="flex justify-center gap-4 text-[11px] font-medium">
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+            {lang === 'zh' ? '隐私政策' : lang === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}
+          </a>
+          <span>•</span>
+          <span className="font-mono">Version 1.0.0</span>
+        </div>
+      </footer>
+
       {/* Add Habit dynamic Form Modality */}
       <AddHabitModal
         isOpen={isModalOpen}

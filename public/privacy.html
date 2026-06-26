@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐私政策 | Minimalist 极简自律飞轮</title>
+    <style>
+        :root {
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --primary-color: #4f46e5;
+            --border-color: #e5e7eb;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #09090b;
+                --card-bg: #18181b;
+                --text-primary: #f4f4f5;
+                --text-secondary: #a1a1aa;
+                --primary-color: #6366f1;
+                --border-color: #27272a;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 24px;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        p, ul {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .lang-switch {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .lang-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 40px 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <button class="lang-btn active" onclick="switchLang('zh')">简体中文</button>
+            <button class="lang-btn" onclick="switchLang('en')">English</button>
+        </div>
+
+        <!-- Chinese Version -->
+        <div id="lang-zh" class="card">
+            <div class="header">
+                <div class="logo">🎯</div>
+                <h1>隐私政策</h1>
+                <p class="subtitle">适用于：Minimalist 极简自律飞轮 移动客户端</p>
+                <p class="subtitle" style="margin-top: 4px;">更新日期：2026年6月26日</p>
+            </div>
+
+            <div class="badge">🛡️ 100% 纯本地化存储 · 零个人数据收集</div>
+
+            <p>感谢您选择使用 <strong>Minimalist 极简自律飞轮</strong>（以下简称“本应用”）。我们非常重视您的隐私，并致力于保障您的个人信息安全。本隐私政策旨在向您说明本应用对个人数据的使用情况。</p>
+
+            <h2>一、 核心原则：零个人数据收集</h2>
+            <p>本应用倡导并实现<strong>极简、本地化、去中心化</strong>的数据理念。<strong>我们完全不收集、不存储、不传输任何您的个人数据。</strong></p>
+            <ul>
+                <li><strong>无需注册或登录</strong>：您在使用本应用的所有功能时，无需注册账户，无需提供手机号、邮箱等个人身份标识信息。</li>
+                <li><strong>不包含任何第三方跟踪SDK</strong>：我们拒绝植入任何统计、广告、追踪等可能会静默收集用户隐私的第三方 SDK 代码。</li>
+            </ul>
+
+            <h2>二、 数据的本地化存储与完全控制</h2>
+            <p>您在本应用中创建的所有习惯、打卡记录、番茄钟计时、专注时长和心情手账日志，<strong>均以完全加密和隔离的形式存储在您当前使用的移动设备本地沙盒中（通过 IndexDB / LocalStorage 存储）</strong>。</p>
+            <ul>
+                <li><strong>无云端同步</strong>：我们没有建立任何中心化服务器来托管您的数据，任何数据都不会传输给本应用开发者。</li>
+                <li><strong>本地安全沙盒</strong>：由于数据驻留在沙盒中，其他第三方应用无法越权读取您的打卡与日记内容。</li>
+                <li><strong>完全自主控制</strong>：您可以随时利用应用底部的“清空数据”或“导出习惯数据”功能，一键清除、覆盖或备份您本地的所有自律数据。</li>
+            </ul>
+
+            <h2>三、 敏感权限使用说明</h2>
+            <p>为了保证最佳的用户交互体验，本应用可能会在必要时向您申请系统权限：</p>
+            <ul>
+                <li><strong>设备震动控制（Vibration）</strong>：仅用于打卡、番茄钟计时结束时的轻微触觉反馈（Haptic Feedback），提供更具物理质感的打卡爽感。我们不通过该权限收集任何硬件特征。</li>
+                <li><strong>本地存储访问</strong>：用于在浏览器和系统沙盒内读写本地缓存。我们绝对不会访问您沙盒之外的任何系统相册、通讯录、位置或短信等敏感文件夹。</li>
+            </ul>
+
+            <h2>四、 变更与联系我们</h2>
+            <p>我们可能会根据业务需要或法律法规不时更新本隐私政策。若本应用在未来引入任何云端同步功能，我们将通过显著形式提前征得您的明示同意，并升级隐私政策。</p>
+            <p>如果您对我们的零数据隐私策略有任何疑问、建议或反馈，欢迎通过以下电子邮件联系我们：</p>
+            <p style="font-weight: 600; color: var(--primary-color);">Email: jiao20220919@gmail.com</p>
+        </div>
+
+        <!-- English Version -->
+        <div id="lang-en" class="card" style="display: none;">
+            <div class="header">
+                <div class="logo">🎯</div>
+                <h1>Privacy Policy</h1>
+                <p class="subtitle">App: Minimalist Discipline Flywheel</p>
+                <p class="subtitle" style="margin-top: 4px;">Last Updated: June 26, 2026</p>
+            </div>
+
+            <div class="badge">🛡️ 100% Offline Local Storage · Zero Personal Data Collected</div>
+
+            <p>Thank you for choosing <strong>Minimalist Discipline Flywheel</strong> (hereinafter referred to as "the App"). We are highly committed to safeguarding your personal data and respect your absolute right to digital privacy. This policy explains our simple approach to privacy.</p>
+
+            <h2>1. Core Principle: Zero Data Collection</h2>
+            <p>We advocate and enforce a strict <strong>offline-first, localized, and decentralized</strong> data standard. <strong>We do not collect, store, or transmit any of your personal data.</strong></p>
+            <ul>
+                <li><strong>No Registration Required</strong>: You can fully enjoy all features of this App without signing up, creating profiles, or providing phone numbers, emails, or credentials.</li>
+                <li><strong>No Third-Party Tracker SDKs</strong>: We refuse to inject tracking, advertising, analytics, or behavioral telemetry SDKs that might silently peek into your system information.</li>
+            </ul>
+
+            <h2>2. On-Device Storage & Complete Sovereignty</h2>
+            <p>All your habits, daily check-ins, Pomodoro timer logs, focus records, and hand-written diary entries are <strong>stored strictly in the secure localized sandbox of your current device (via IndexedDB / LocalStorage)</strong>.</p>
+            <ul>
+                <li><strong>No Server Synced</strong>: We do not maintain any centralized databases, APIs, or server instances to host your content. No data ever leaves your device.</li>
+                <li><strong>Isolated Storage Sandbox</strong>: Due to standard container limits, other third-party apps on your device cannot access or read your discipline fly-wheel ledger.</li>
+                <li><strong>Sovereign Controls</strong>: You can permanently wipe or export your data at any moment using the built-in "Clear Data" or "Export Data" buttons located in the application footer.</li>
+            </ul>
+
+            <h2>3. Requested Device Permissions</h2>
+            <p>To provide high-quality sensory feedback, the App may request standard platform permissions:</p>
+            <ul>
+                <li><strong>Vibration Control</strong>: Used exclusively to deliver subtle haptic taps during punch-ins and Pomodoro chimes. We do not query device hardware identifiers.</li>
+                <li><strong>Local Cache Access</strong>: Required to write and read high-reliability local caches (IndexedDB). We never request or scan private file folders, phone contacts, photos, GPS location, or SMS.</li>
+            </ul>
+
+            <h2>4. Updates & Contact Us</h2>
+            <p>We may update this Privacy Policy from time to time. Should we introduce modern cloud-based synchronization features in future editions, we will request your explicit opt-in and present an updated policy before launching any services.</p>
+            <p>For any queries, feedback, or concerns regarding our Zero-Data privacy model, please reach us at:</p>
+            <p style="font-weight: 600; color: var(--primary-color);">Email: jiao20220919@gmail.com</p>
+        </div>
+
+        <footer>
+            <p>© 2026 Minimalist Discipline Flywheel. All Rights Reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        function switchLang(lang) {
+            const zh = document.getElementById('lang-zh');
+            const en = document.getElementById('lang-en');
+            const btns = document.querySelectorAll('.lang-btn');
+
+            if (lang === 'zh') {
+                zh.style.display = 'block';
+                en.style.display = 'none';
+                btns[0].classList.add('active');
+                btns[1].classList.remove('active');
+            } else {
+                zh.style.display = 'none';
+                en.style.display = 'block';
+                btns[0].classList.remove('active');
+                btns[1].classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
